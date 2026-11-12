@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#123b70">
+<meta name="description" content="Scheme Setu - find government scholarships and schemes in India and Karnataka.">
+<title>Scheme Setu | Government Schemes & Scholarships</title>
+<style>
+:root{--navy:#123b70;--blue:#1769aa;--pale:#eef5fc;--ink:#172638;--muted:#64748b;--line:#dce5ef;--white:#fff}
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,Helvetica,sans-serif;background:#f4f7fb;color:var(--ink);line-height:1.5}
+header{background:linear-gradient(135deg,#123b70,#1976b9);color:white;padding:28px 16px 25px;text-align:center}
+header h1{margin:0;font-size:30px;letter-spacing:.3px}
+header p{margin:8px auto 0;max-width:700px;color:#e5f1ff}
+main{max-width:1100px;margin:22px auto;padding:0 14px 40px}
+.toolbar{background:white;border:1px solid var(--line);border-radius:15px;padding:15px;box-shadow:0 4px 16px #173b6410;position:sticky;top:0;z-index:5}
+.controls{display:grid;grid-template-columns:1fr 230px;gap:10px}
+input,select{width:100%;padding:13px;border:1px solid #cbd7e5;border-radius:9px;font-size:15px;background:white;color:var(--ink)}
+.actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:11px}
+button{border:0;border-radius:9px;padding:11px 16px;font-size:14px;font-weight:700;cursor:pointer}
+.primary{background:var(--navy);color:white}.secondary{background:#e8f1fb;color:var(--navy)}
+button:active{transform:scale(.98)}
+#status{font-size:13px;color:var(--muted);margin:10px 2px 0}
+.category{margin-top:25px}
+.category-head{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:12px}
+.category h2{font-size:20px;color:var(--navy);margin:0}
+.count{font-size:12px;color:var(--muted);background:#e8eef6;padding:4px 9px;border-radius:20px;white-space:nowrap}
+.cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.card{background:white;border:1px solid var(--line);border-radius:12px;padding:15px;box-shadow:0 3px 12px #173b6409}
+.card h3{font-size:16px;margin:0 0 8px;color:#193b62}
+.card p{margin:5px 0;font-size:14px}
+.card .label{font-weight:700;color:#42566d}
+.card a{display:inline-block;margin-top:9px;color:#0868b5;font-weight:700;font-size:13px;overflow-wrap:anywhere}
+.card-actions{display:flex;justify-content:flex-end;margin-top:8px}
+.card-actions button{padding:7px 11px;font-size:12px}
+.empty{background:white;border:1px dashed #b9c8d8;border-radius:12px;padding:25px;text-align:center;color:var(--muted)}
+footer{text-align:center;padding:22px;color:var(--muted);font-size:12px}
+@media(max-width:650px){header h1{font-size:25px}.controls{grid-template-columns:1fr}.cards{grid-template-columns:1fr}.toolbar{position:static}}
+</style>
+</head>
+<body>
+<header>
+  <h1>Scheme Setu</h1>
+  <p>Government scholarships and schemes — Central and Karnataka</p>
+</header>
+<main>
+  <section class="toolbar" aria-label="Search and copy controls">
+    <div class="controls">
+      <input id="search" type="search" placeholder="Search scheme, eligibility or category..." aria-label="Search schemes">
+      <select id="category" aria-label="Choose category"><option value="all">All categories</option></select>
+    </div>
+    <div class="actions">
+      <button class="primary" id="copyAll">Copy All Schemes</button>
+      <button class="secondary" id="copyVisible">Copy Visible Results</button>
+      <button class="secondary" id="clear">Clear Search</button>
+    </div>
+    <div id="status" aria-live="polite">Loading schemes...</div>
+  </section>
+  <div id="results"></div>
+</main>
+<footer>Scheme Setu • Check the official portal for the latest eligibility, dates and application rules.</footer>
+<script>
+const schemes = [
+["CENTRAL SCHOLARSHIPS","NMMS","Class 8 eligible school students; marks and income conditions apply.","https://scholarships.gov.in/"],
+["CENTRAL SCHOLARSHIPS","PM-USP Central Sector Scholarship","Class 12 students above 80th percentile; family income up to ₹4.5 lakh.","https://scholarships.gov.in/"],
+["CENTRAL SCHOLARSHIPS","SC Pre-Matric Scholarship","Eligible SC school students meeting income conditions.","https://scholarships.gov.in/"],
+["CENTRAL SCHOLARSHIPS","SC Post-Matric Scholarship","SC students studying after Class 10 meeting income conditions.","https://scholarships.gov.in/"],
+["CENTRAL SCHOLARSHIPS","ST Post-Matric Scholarship","ST students pursuing recognised post-matric courses.","https://scholarships.gov.in/"],
+["CENTRAL SCHOLARSHIPS","Top Class Education for SC","Eligible SC students in notified premier institutions.","https://scholarships.gov.in/"],
+["CENTRAL SCHOLARSHIPS","Higher Education Scholarship for ST","Eligible ST students in notified institutions.","https://scholarships.gov.in/"],
+["CENTRAL SCHOLARSHIPS","PM YASASVI","Eligible OBC, EBC and DNT students meeting selection and income conditions.","https://yet.nta.ac.in/"],
+["CENTRAL SCHOLARSHIPS","OBC Post-Matric Scholarship","Eligible OBC students after Class 10.","https://scholarships.gov.in/"],
+["CENTRAL SCHOLARSHIPS","Minority Pre-Matric Scholarship","Eligible students from notified minority communities; subject to scheme availability.","https://scholarships.gov.in/"],
+["CENTRAL SCHOLARSHIPS","Minority Post-Matric Scholarship","Eligible minority students in covered courses; subject to scheme availability.","https://scholarships.gov.in/"],
+["CENTRAL SCHOLARSHIPS","Minority Merit-cum-Means Scholarship","Minority students in eligible professional and technical courses.","https://scholarships.gov.in/"],
+["CENTRAL SCHOLARSHIPS","Disability Pre-Matric Scholarship","Eligible school students with benchmark disabilities.","https://scholarships.gov.in/"],
+["CENTRAL SCHOLARSHIPS","Disability Post-Matric Scholarship","Eligible students with benchmark disabilities pursuing post-matric courses.","https://scholarships.gov.in/"],
+["CENTRAL SCHOLARSHIPS","Top Class Disability Scholarship","Students with benchmark disabilities in eligible higher education institutions.","https://scholarships.gov.in/"],
+["CENTRAL SCHOLARSHIPS","Ishan Uday","Eligible North Eastern Region students pursuing undergraduate courses.","https://www.ugc.gov.in/"],
+["CENTRAL SCHOLARSHIPS","National Scholarship for Postgraduate Studies","Eligible postgraduate students meeting merit requirements.","https://www.ugc.gov.in/"],
+["CENTRAL SCHOLARSHIPS","PM Scholarship for CAPF and Assam Rifles","Eligible dependent wards and widows of personnel.","https://scholarships.gov.in/"],
+["CENTRAL SCHOLARSHIPS","PM Scholarship for Railway Personnel","Eligible dependent wards and widows of specified railway personnel.","https://scholarships.gov.in/"],
+["CENTRAL SCHOLARSHIPS","PM Scholarship for Martyred Police Personnel","Eligible dependent children and widows of martyred police personnel.","https://scholarships.gov.in/"],
+["CENTRAL SCHOLARSHIPS","AICTE Pragati","Eligible girls in approved technical diploma and degree courses.","https://www.aicte-india.org/"],
+["CENTRAL SCHOLARSHIPS","AICTE Saksham","Students with at least 40% disability in approved technical courses.","https://www.aicte-india.org/"],
+["CENTRAL SCHOLARSHIPS","AICTE Swanath","Eligible orphans and wards of specified deceased personnel or COVID-19 victims.","https://www.aicte-india.org/"],
+["CENTRAL SCHOLARSHIPS","Beedi/Cine/IOMC/LSDM Workers Scholarship","Children of eligible registered workers in specified courses.","https://scholarships.gov.in/"],
+["CENTRAL SCHOLARSHIPS","National Fellowship and Scholarship for ST","Eligible ST students pursuing higher education and research.","https://tribal.nic.in/"],
+["CENTRAL SCHOLARSHIPS","INSPIRE Scholarship (SHE)","Meritorious students studying basic and natural sciences.","https://online-inspire.gov.in/"],
+["CENTRAL SCHOLARSHIPS","KVPY Legacy Fellowship","Existing fellowship beneficiaries only; no fresh admissions.","https://dst.gov.in/"],
+["CENTRAL SCHOLARSHIPS","UGC National Fellowship for SC","Eligible SC research candidates under current fellowship rules.","https://www.ugc.gov.in/"],
+["CENTRAL SCHOLARSHIPS","UGC National Fellowship for ST","Eligible ST research candidates under current fellowship rules.","https://www.ugc.gov.in/"],
+["CENTRAL SCHOLARSHIPS","ICAR National Talent Scholarship","Eligible students in specified agricultural undergraduate programmes.","https://icar.org.in/"],
+["CENTRAL SCHOLARSHIPS","ICAR Postgraduate Scholarship","Students admitted to eligible agricultural postgraduate programmes.","https://icar.org.in/"],
+["CENTRAL SCHOLARSHIPS","National Overseas Scholarship","Eligible disadvantaged-category candidates pursuing higher education abroad.","https://nosmsje.gov.in/"],
+
+["KARNATAKA SCHOLARSHIPS","SSP Pre-Matric Scholarship","Eligible Karnataka students in covered categories studying at school.","https://ssp.karnataka.gov.in/"],
+["KARNATAKA SCHOLARSHIPS","SSP Post-Matric SC","Karnataka SC students pursuing eligible courses after Class 10.","https://ssp.postmatric.karnataka.gov.in/"],
+["KARNATAKA SCHOLARSHIPS","SSP Post-Matric ST","Karnataka ST students pursuing eligible post-matric courses.","https://ssp.postmatric.karnataka.gov.in/"],
+["KARNATAKA SCHOLARSHIPS","SSP Backward Classes","Eligible Category I, IIA, IIB, IIIA and IIIB students.","https://ssp.karnataka.gov.in/"],
+["KARNATAKA SCHOLARSHIPS","Karnataka Minority Scholarship","Eligible minority students meeting income and merit conditions.","https://dom.karnataka.gov.in/"],
+["KARNATAKA SCHOLARSHIPS","Vidyasiri","Eligible Karnataka backward-class students meeting accommodation and income conditions.","https://bcwd.karnataka.gov.in/"],
+["KARNATAKA SCHOLARSHIPS","Brahmin Development Board Scholarship","Eligible Karnataka Brahmin students in notified courses.","https://karnataka.gov.in/"],
+["KARNATAKA SCHOLARSHIPS","Karnataka Disability Scholarship","Eligible students with disabilities in recognised institutions.","https://swd.karnataka.gov.in/"],
+["KARNATAKA SCHOLARSHIPS","Karnataka Fee Reimbursement","Eligible SC, ST, OBC and minority students in approved courses.","https://ssp.karnataka.gov.in/"],
+["KARNATAKA SCHOLARSHIPS","Karnataka Agriculture Scholarship","Eligible students in specified agriculture-related courses.","https://raitamitra.karnataka.gov.in/"],
+["KARNATAKA SCHOLARSHIPS","Raitha Vidya Nidhi","Eligible children of farmers pursuing higher education.","https://raitamitra.karnataka.gov.in/"],
+["KARNATAKA SCHOLARSHIPS","Labour Welfare Board Education Assistance","Children of eligible registered workers in notified courses.","https://klwb.karnataka.gov.in/"],
+["KARNATAKA SCHOLARSHIPS","Karnataka Minority Fee Reimbursement","Eligible minority students in covered courses.","https://dom.karnataka.gov.in/"],
+
+["WOMEN AND GIRL CHILD","PM Matru Vandana Yojana","Eligible pregnant and lactating women subject to conditions.","https://pmmvy.wcd.gov.in/"],
+["WOMEN AND GIRL CHILD","Sukanya Samriddhi Yojana","Girl child below 10; account opened by parent or guardian.","https://www.nsiindia.gov.in/"],
+["WOMEN AND GIRL CHILD","Bhagyalakshmi Karnataka","Eligible girl children from qualifying BPL families.","https://dwcd.karnataka.gov.in/"],
+["WOMEN AND GIRL CHILD","Gruha Lakshmi Karnataka","Eligible woman household head on qualifying Karnataka ration card.","https://sevasindhu.karnataka.gov.in/"],
+["WOMEN AND GIRL CHILD","Shakti Karnataka","Eligible Karnataka resident women and girl students under scheme rules.","https://transport.karnataka.gov.in/"],
+
+["FARMERS AND AGRICULTURE","PM-KISAN","Eligible landholding farmer families; exclusions apply.","https://pmkisan.gov.in/"],
+["FARMERS AND AGRICULTURE","PM Fasal Bima Yojana","Farmers growing notified crops in notified areas.","https://pmfby.gov.in/"],
+["FARMERS AND AGRICULTURE","Kisan Credit Card","Eligible farmers, tenant farmers and sharecroppers.","https://www.myscheme.gov.in/"],
+["FARMERS AND AGRICULTURE","PM Krishi Sinchai Yojana","Eligible farmers and irrigation projects.","https://agriwelfare.gov.in/"],
+["FARMERS AND AGRICULTURE","Soil Health Card","Farmers and agricultural landholders.","https://soilhealth.dac.gov.in/"],
+["FARMERS AND AGRICULTURE","Raitha Siri Karnataka","Eligible Karnataka farmers under notified conditions.","https://raitamitra.karnataka.gov.in/"],
+["FARMERS AND AGRICULTURE","Krishi Bhagya Karnataka","Eligible farmers in notified areas meeting water-conservation conditions.","https://raitamitra.karnataka.gov.in/"],
+
+["EMPLOYMENT AND YOUTH","PM Kaushal Vikas Yojana","Eligible youth seeking skill training and certification.","https://www.skillindiadigital.gov.in/"],
+["EMPLOYMENT AND YOUTH","MGNREGA","Rural household members aged 18+ willing to perform unskilled manual work.","https://nrega.dord.gov.in/"],
+["EMPLOYMENT AND YOUTH","PM Employment Generation Programme","Individuals aged 18+ establishing eligible new micro-enterprises.","https://www.kviconline.gov.in/pmegpeportal/"],
+["EMPLOYMENT AND YOUTH","PM Mudra Yojana","Individuals and eligible micro-businesses seeking business loans.","https://www.mudra.org.in/"],
+["EMPLOYMENT AND YOUTH","Yuva Nidhi Karnataka","Eligible unemployed Karnataka graduates and diploma holders.","https://sevasindhu.karnataka.gov.in/"],
+["EMPLOYMENT AND YOUTH","National Apprenticeship Promotion Scheme","Eligible apprentices and establishments.","https://www.apprenticeshipindia.gov.in/"],
+
+["HOUSING AND BASIC FACILITIES","PM Awas Yojana Gramin","Eligible rural houseless households without a pucca house.","https://pmayg.nic.in/"],
+["HOUSING AND BASIC FACILITIES","PM Awas Yojana Urban 2.0","Eligible urban families without a pucca house.","https://pmay-urban.gov.in/"],
+["HOUSING AND BASIC FACILITIES","Basava Vasati Karnataka","Eligible economically weaker and houseless families.","https://ashraya.karnataka.gov.in/"],
+["HOUSING AND BASIC FACILITIES","Ambedkar Housing Karnataka","Eligible SC/ST houseless or economically weaker households.","https://ashraya.karnataka.gov.in/"],
+["HOUSING AND BASIC FACILITIES","PM Surya Ghar Muft Bijli","Eligible residential electricity consumers.","https://pmsuryaghar.gov.in/"],
+
+["HEALTH AND MEDICAL","Ayushman Bharat PM-JAY","Eligible poor and vulnerable families under beneficiary criteria.","https://pmjay.gov.in/"],
+["HEALTH AND MEDICAL","Arogya Karnataka","Eligible Karnataka residents under state health coverage rules.","https://arogyakarnataka.karnataka.gov.in/"],
+["HEALTH AND MEDICAL","Janani Suraksha Yojana","Eligible pregnant women under scheme conditions.","https://nhm.gov.in/"],
+["HEALTH AND MEDICAL","National Health Mission","Eligible communities accessing public health services.","https://nhm.gov.in/"],
+["HEALTH AND MEDICAL","Janaushadhi Pariyojana","All citizens can purchase affordable medicines at authorised centres.","https://janaushadhi.gov.in/"],
+
+["INSURANCE, PENSION AND BANKING","Jan Dhan Yojana","Eligible Indian residents seeking basic bank accounts.","https://pmjdy.gov.in/"],
+["INSURANCE, PENSION AND BANKING","Jeevan Jyoti Bima Yojana","Eligible bank or post-office account holders aged 18–50.","https://jansuraksha.gov.in/"],
+["INSURANCE, PENSION AND BANKING","Suraksha Bima Yojana","Eligible bank or post-office account holders aged 18–70.","https://jansuraksha.gov.in/"],
+["INSURANCE, PENSION AND BANKING","Atal Pension Yojana","Eligible citizens aged 18–40 with a savings account; income-tax payers excluded from joining.","https://www.npscra.nsdl.co.in/"],
+["INSURANCE, PENSION AND BANKING","National Social Assistance Programme","Eligible elderly people, widows and persons with disabilities from qualifying low-income households.","https://nsap.nic.in/"],
+["INSURANCE, PENSION AND BANKING","Sandhya Suraksha Karnataka","Eligible senior citizens meeting Karnataka age and income conditions.","https://sevasindhu.karnataka.gov.in/"],
+
+["FOOD AND RATION","PM Garib Kalyan Anna Yojana","Eligible Antyodaya and Priority Household ration-card beneficiaries.","https://nfsa.gov.in/"],
+["FOOD AND RATION","Anna Bhagya Karnataka","Eligible BPL and Antyodaya ration-card households.","https://ahara.kar.nic.in/"],
+["FOOD AND RATION","One Nation One Ration Card","Eligible NFSA ration-card beneficiaries across participating states.","https://impds.nic.in/"],
+
+["BUSINESS AND SELF-EMPLOYMENT","PM Vishwakarma","Traditional artisans and craftspeople in notified trades aged 18+.","https://pmvishwakarma.gov.in/"],
+["BUSINESS AND SELF-EMPLOYMENT","Stand-Up India","Eligible SC/ST and women entrepreneurs establishing greenfield enterprises.","https://www.standupmitra.in/"],
+["BUSINESS AND SELF-EMPLOYMENT","Startup India","Eligible startups meeting DPIIT recognition criteria.","https://www.startupindia.gov.in/"],
+["BUSINESS AND SELF-EMPLOYMENT","PM SVANidhi","Eligible street vendors meeting identification and lending requirements.","https://pmsvanidhi.mohua.gov.in/"],
+["BUSINESS AND SELF-EMPLOYMENT","DAY-NULM","Eligible urban poor seeking livelihood and skills support.","https://nulm.gov.in/"],
+
+["DISABILITY AND SOCIAL WELFARE","ADIP Scheme","Eligible persons with disabilities requiring assistive devices.","https://depwd.gov.in/"],
+["DISABILITY AND SOCIAL WELFARE","Scholarships for Students with Disabilities","Eligible students with benchmark disabilities under scholarship rules.","https://scholarships.gov.in/"],
+
+["OFFICIAL APPLICATION AND INFORMATION PORTALS","National Scholarship Portal","Central and state scholarship application portal.","https://scholarships.gov.in/"],
+["OFFICIAL APPLICATION AND INFORMATION PORTALS","Karnataka SSP","Karnataka student scholarship portal.","https://ssp.karnataka.gov.in/"],
+["OFFICIAL APPLICATION AND INFORMATION PORTALS","MyScheme","Search government schemes and check eligibility.","https://www.myscheme.gov.in/"],
+["OFFICIAL APPLICATION AND INFORMATION PORTALS","National Portal of India","Government services and information.","https://www.india.gov.in/"]
+];
+
+const results = document.getElementById('results');
+const search = document.getElementById('search');
+const category = document.getElementById('category');
+const status = document.getElementById('status');
+const categories = [...new Set(schemes.map(s => s[0]))];
+categories.forEach(c => {
+  const option = document.createElement('option');
+  option.value = c; option.textContent = c;
+  category.appendChild(option);
+});
+
+function filteredSchemes(){
+  const term = search.value.trim().toLowerCase();
+  return schemes.filter(s => (category.value === 'all' || s[0] === category.value) &&
+    (!term || s.join(' ').toLowerCase().includes(term)));
+}
+function formatScheme(s){
+  return `${s[1]}\nCategory: ${s[0]}\nEligibility: ${s[2]}\nOfficial website: ${s[3]}`;
+}
+function render(){
+  const items = filteredSchemes();
+  results.innerHTML = '';
+  status.textContent = `Showing ${items.length} of ${schemes.length} entries`;
+  if(!items.length){results.innerHTML='<div class="empty">No matching schemes found. Try another search.</div>';return;}
+  const grouped = new Map();
+  items.forEach(s => {if(!grouped.has(s[0])) grouped.set(s[0],[]);grouped.get(s[0]).push(s);});
+  grouped.forEach((list, name) => {
+    const section = document.createElement('section'); section.className='category';
+    const head = document.createElement('div'); head.className='category-head';
+    const h = document.createElement('h2'); h.textContent=name;
+    const count = document.createElement('span'); count.className='count'; count.textContent=`${list.length} entries`;
+    head.append(h,count);
+    const cards = document.createElement('div'); cards.className='cards';
+    list.forEach(s => {
+      const card=document.createElement('article');card.className='card';
+      const title=document.createElement('h3');title.textContent=s[1];
+      const eligibility=document.createElement('p');eligibility.innerHTML='<span class="label">Eligibility: </span>';
+      eligibility.append(document.createTextNode(s[2]));
+      const link=document.createElement('a');link.href=s[3];link.target='_blank';link.rel='noopener noreferrer';link.textContent='Open official website ↗';
+   
